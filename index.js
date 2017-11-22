@@ -96,3 +96,17 @@ module.exports = {
     writeProfile,
     rewriteAbsolutePaths
 }
+
+
+async function profileNSeconds(port, n = 4000) {
+    const session = await startProfiling(port)
+    await wait(n);
+    const data = await session.stop();
+    await writeProfile(data);
+}
+
+Promise.all([
+    profileNSeconds(9227),
+    profileNSeconds(9228),
+    profileNSeconds(9229)
+])
