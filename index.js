@@ -54,7 +54,7 @@ async function connectWithRetry(port, retry = 500, retryWait = 50) {
     }
 }
 
-async function startProfileSession(port) {
+async function startProfiling(port) {
 
     const client = await connectWithRetry(port);
     const { Runtime, Profiler } = client;
@@ -92,21 +92,7 @@ async function writeProfile(profileData, dir = __dirname, name = `profile-${Date
 }
 
 module.exports = {
-    startProfileSession,
+    startProfiling,
     writeProfile,
     rewriteAbsolutePaths
 }
-
-
-async function profileNSeconds(port, n = 4000) {
-    const session = await startProfileSession(port)
-    await wait(n);
-    const data = await session.stop();
-    await writeProfile(data);
-}
-
-Promise.all([
-    profileNSeconds(9227),
-    profileNSeconds(9228),
-    profileNSeconds(9229)
-])
