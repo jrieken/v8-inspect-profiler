@@ -50,9 +50,9 @@ async function connectWithRetry(port, tries = 10, retryWait = 50, errors = []) {
     }
 }
 
-async function startProfiling(port) {
+async function startProfiling(options) {
 
-    const client = await connectWithRetry(port);
+    const client = await connectWithRetry(options.port, options.tries, options.retryWait);
     const { Runtime, Profiler } = client;
 
     await Runtime.runIfWaitingForDebugger();
