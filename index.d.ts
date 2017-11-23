@@ -1,12 +1,12 @@
 declare module 'v8-inspect-profiler' {
 
-    export type Profile = any;
+    export interface Profile { }
 
     export interface ProfilingSession {
-        async stop(): Profile;
+        stop(afterDelay?: number): PromiseLike<Profile>;
     }
 
-    export async function startProfiling(port: number): ProfilingSession;
-    export async function writeProfile(profile: Profile, dir?: string, name?: string): void;
-    export async function rewriteAbsolutePaths(profile, replaceWith?);
+    export function startProfiling(port: number): PromiseLike<ProfilingSession>;
+    export function writeProfile(profile: Profile, dir?: string, name?: string): PromiseLike<void>;
+    export function rewriteAbsolutePaths(profile, replaceWith?);
 }

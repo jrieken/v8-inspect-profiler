@@ -5,17 +5,15 @@
 
 //@ts-check
 
-const { promisify } = require('util');
 const { join, isAbsolute, basename } = require('path');
 const { writeFile } = require('fs');
 const cdp = require('chrome-remote-interface');
-
 
 async function wait(n) {
     return new Promise(resolve => setTimeout(resolve, n));
 }
 
-async function connectWithRetry(port, retry = 500, retryWait = 50) {
+async function connectWithRetry(port, tries = 10, retryWait = 50, errors = []) {
     function chooseTab(targets) {
         const target = targets.find(target => {
             if (target.webSocketDebuggerUrl) {
@@ -38,19 +36,17 @@ async function connectWithRetry(port, retry = 500, retryWait = 50) {
     }
 
     try {
-        const client = await cdp({
+        return await cdp({
             port,
             chooseTab,
             local: true,
         });
-        console.log(`CONNECTED with ${retry} retries left...`)
-        return client;
     } catch (e) {
-        if (e.code !== 'ECONNREFUSED' || retry === 0) {
-            throw e;
+        if (tries === errors.unshift(e)) {
+            throw errors;
         }
         await wait(retryWait);
-        return connectWithRetry(port, retry - 1);
+        return connectWithRetry(port, tries, retryWait, errors);
     }
 }
 
@@ -66,7 +62,10 @@ async function startProfiling(port) {
     await Profiler.start();
 
     return {
-        stop: async function () {
+        stop: async function (n = 0) {
+            if (n > 0) {
+                await wait(n);
+            }
             const data = await Profiler.stop();
             await client.close();
             return data;
@@ -86,9 +85,17 @@ function rewriteAbsolutePaths(profile, replace = 'noAbsolutePaths') {
 }
 
 async function writeProfile(profileData, dir = __dirname, name = `profile-${Date.now()}.cpuprofile`) {
-    const filename = join(dir, name);
-    const data = JSON.stringify(profileData.profile, null, 4);
-    await promisify(writeFile)(filename, data);
+    await new Promise((resolve, reject) => {
+        const filename = join(dir, name);
+        const data = JSON.stringify(profileData.profile, null, 4);
+        writeFile(filename, data, err => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve();
+            }
+        })
+    });
 }
 
 module.exports = {
@@ -96,17 +103,3 @@ module.exports = {
     writeProfile,
     rewriteAbsolutePaths
 }
-
-
-async function profileNSeconds(port, n = 4000) {
-    const session = await startProfiling(port)
-    await wait(n);
-    const data = await session.stop();
-    await writeProfile(data);
-}
-
-Promise.all([
-    profileNSeconds(9227),
-    profileNSeconds(9228),
-    profileNSeconds(9229)
-])
