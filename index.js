@@ -84,9 +84,8 @@ function rewriteAbsolutePaths(profile, replace = 'noAbsolutePaths') {
     return profile;
 }
 
-async function writeProfile(profileData, dir = __dirname, name = `profile-${Date.now()}.cpuprofile`) {
+async function writeProfile(profileData, filename = `profile-${Date.now()}.cpuprofile`) {
     await new Promise((resolve, reject) => {
-        const filename = join(dir, name);
         const data = JSON.stringify(profileData.profile, null, 4);
         writeFile(filename, data, err => {
             if (err) {
