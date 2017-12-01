@@ -17,12 +17,14 @@ Next, start profiling. Create an app that starts and stops profiling. Like so:
 ```js
 const profiler = require('v8-inspect-profiler');
 
-// start profiler
+// connect and start profiler
 const session = await profiler.startProfiling({port: 5222 });
 
 // time goes by ...
 
+// stop profiler and disconnect 
 const profile = await session.stop();
 
+// save profile to disk
 await profiler.writeProfile(profile, 'somepath.cpuprofile');
 ```
