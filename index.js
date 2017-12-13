@@ -100,7 +100,7 @@ async function writeProfile(profileData, filename = `profile-${Date.now()}.cpupr
 module.exports = {
     startProfiling,
     writeProfile,
-	rewriteAbsolutePaths,
-	// @ts-ignore
-	listTabs: cdp.listTabs
+    rewriteAbsolutePaths,
+    // @ts-ignore
+    listTabs: cdp.listTabs
 }
