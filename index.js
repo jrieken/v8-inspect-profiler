@@ -13,8 +13,8 @@ async function wait(n) {
     return new Promise(resolve => setTimeout(resolve, n));
 }
 
-async function connectWithRetry(port, tries = 10, retryWait = 50, errors = []) {
-    function chooseTab(targets) {
+async function connectWithRetry(port, tries = 10, retryWait = 50, errors = [], chooseTab) {
+    chooseTab = chooseTab || function (targets) {
         const target = targets.find(target => {
             if (target.webSocketDebuggerUrl) {
                 if (target.type === 'page') {
@@ -33,7 +33,7 @@ async function connectWithRetry(port, tries = 10, retryWait = 50, errors = []) {
             };
         }
         return target;
-    }
+    };
 
     try {
         return await cdp({
@@ -46,13 +46,13 @@ async function connectWithRetry(port, tries = 10, retryWait = 50, errors = []) {
             throw errors;
         }
         await wait(retryWait);
-        return connectWithRetry(port, tries, retryWait, errors);
+        return connectWithRetry(port, tries, retryWait, errors, chooseTab);
     }
 }
 
 async function startProfiling(options) {
 
-    const client = await connectWithRetry(options.port, options.tries, options.retryWait);
+    const client = await connectWithRetry(options.port, options.tries, options.retryWait, [], options.chooseTab);
     const { Runtime, Profiler } = client;
 
     await Runtime.runIfWaitingForDebugger();
@@ -100,5 +100,7 @@ async function writeProfile(profileData, filename = `profile-${Date.now()}.cpupr
 module.exports = {
     startProfiling,
     writeProfile,
-    rewriteAbsolutePaths
+    rewriteAbsolutePaths,
+    // @ts-ignore
+    listTabs: cdp.listTabs
 }
