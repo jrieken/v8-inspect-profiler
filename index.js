@@ -13,9 +13,9 @@ async function wait(n) {
     return new Promise(resolve => setTimeout(resolve, n));
 }
 
-async function connectWithRetry(port, tries = 10, retryWait = 50, errors = [], chooseTab) {
-    if (typeof chooseTab === 'undefined') {
-        chooseTab = function (targets) {
+async function connectWithRetry(port, tries = 10, retryWait = 50, errors = [], target) {
+    if (typeof target === 'undefined') {
+        target = function (targets) {
             const target = targets.find(target => {
                 if (target.webSocketDebuggerUrl) {
                     if (target.type === 'page') {
@@ -40,21 +40,27 @@ async function connectWithRetry(port, tries = 10, retryWait = 50, errors = [], c
     try {
         return await cdp({
             port,
-            chooseTab,
+            target,
             local: true,
         });
     } catch (e) {
-        if (tries === errors.unshift(e)) {
-            throw errors;
+        errors.push(e);
+        if (tries <= 1) {
+            throw new class extends Error {
+                constructor() {
+                    super('failed to connect');
+                    this.errors = errors;
+                }
+            }
         }
         await wait(retryWait);
-        return connectWithRetry(port, tries, retryWait, errors, chooseTab);
+        return connectWithRetry(port, tries - 1, retryWait, errors, target);
     }
 }
 
 async function startProfiling(options) {
 
-    const client = await connectWithRetry(options.port, options.tries, options.retryWait, [], options.chooseTab);
+    const client = await connectWithRetry(options.port, options.tries, options.retryWait, [], options.target);
     const { Runtime, Profiler } = client;
 
     await Runtime.runIfWaitingForDebugger();
@@ -103,6 +109,4 @@ module.exports = {
     startProfiling,
     writeProfile,
     rewriteAbsolutePaths,
-    // @ts-ignore
-    listTabs: cdp.listTabs
 }

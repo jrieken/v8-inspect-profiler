@@ -11,6 +11,6 @@
     "url": "git+https://github.com/jrieken/v8-inspect-profiler.git"
   },
   "dependencies": {
-    "chrome-remote-interface": "^0.25.3"
+    "chrome-remote-interface": "^0.26.1"
   }
 }
