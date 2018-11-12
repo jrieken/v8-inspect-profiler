@@ -14,26 +14,28 @@ async function wait(n) {
 }
 
 async function connectWithRetry(port, tries = 10, retryWait = 50, errors = [], chooseTab) {
-    chooseTab = chooseTab || function (targets) {
-        const target = targets.find(target => {
-            if (target.webSocketDebuggerUrl) {
-                if (target.type === 'page') {
-                    return target.url.indexOf('bootstrap/index.html') > 0
-                } else {
-                    return true;
+    if (typeof chooseTab === 'undefined') {
+        chooseTab = function (targets) {
+            const target = targets.find(target => {
+                if (target.webSocketDebuggerUrl) {
+                    if (target.type === 'page') {
+                        return target.url.indexOf('bootstrap/index.html') > 0
+                    } else {
+                        return true;
+                    }
                 }
+            });
+            if (!target) {
+                throw new class extends Error {
+                    constructor() {
+                        super('no target');
+                        this.code = 'ECONNREFUSED';
+                    }
+                };
             }
-        });
-        if (!target) {
-            throw new class extends Error {
-                constructor() {
-                    super('no target');
-                    this.code = 'ECONNREFUSED';
-                }
-            };
-        }
-        return target;
-    };
+            return target;
+        };
+    }
 
     try {
         return await cdp({
