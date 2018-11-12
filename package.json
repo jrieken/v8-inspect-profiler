@@ -1,6 +1,6 @@
 {
   "name": "v8-inspect-profiler",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "v8 profiling via the chrome dev-tools protocol",
   "main": "index.js",
   "types": "index.d.ts",
