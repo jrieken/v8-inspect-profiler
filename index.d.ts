@@ -32,13 +32,13 @@ declare module 'v8-inspect-profiler' {
     }
 
     export interface Target {
-        description: string,
-        devtoolsFrontendUrl: string,
-        id: string,
-        title: string,
-        type: string,
-        url: string,
-        webSocketDebuggerUrl: string
+        description: string;
+        devtoolsFrontendUrl: string;
+        id: string;
+        title: string;
+        type: string;
+        url: string;
+        webSocketDebuggerUrl: string;
     }
 
     export function startProfiling(options: { port: number, tries?: number, retyWait?: number, target?: (targets: Target[]) => Target }): PromiseLike<ProfilingSession>;
