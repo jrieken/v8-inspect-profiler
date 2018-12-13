@@ -61,13 +61,14 @@ async function connectWithRetry(port, tries = 10, retryWait = 50, errors = [], t
 async function startProfiling(options) {
 
     const client = await connectWithRetry(options.port, options.tries, options.retryWait, [], options.target);
-    const { Runtime, Profiler, Debugger } = client;
+    const { Runtime, Profiler } = client;
 
     // resume form inspect-brk
     await Runtime.runIfWaitingForDebugger();
 
     // ensure the runtime isn't being debugged
     if (options.checkForPaused) {
+        let { Debugger } = client;
         let isPaused = false;
         client.on('event', message => {
             if (message.method === 'Debugger.paused') {
