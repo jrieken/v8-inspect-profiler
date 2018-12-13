@@ -67,17 +67,19 @@ async function startProfiling(options) {
     await Runtime.runIfWaitingForDebugger();
 
     // ensure the runtime isn't being debugged
-    let isPaused = false;
-    client.on('event', message => {
-        if (message.method === 'Debugger.paused') {
-            isPaused = true;
-        }
-    })
-    await Debugger.enable();
+    if (options.checkForPaused) {
+        let isPaused = false;
+        client.on('event', message => {
+            if (message.method === 'Debugger.paused') {
+                isPaused = true;
+            }
+        })
+        await Debugger.enable();
 
-    if (isPaused) {
-        client.close();
-        return Promise.reject('runtime is paused');
+        if (isPaused) {
+            client.close();
+            return Promise.reject('runtime is paused');
+        }
     }
 
     // now start profiling
