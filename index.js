@@ -74,7 +74,11 @@ async function startProfiling(options) {
         })
         await Debugger.enable();
         if (isPaused) {
-            client.close();
+            // client.close();
+            // ⬆︎ this leaks the connection but there is an issue in 
+            // chrome that it will resume the runtime whenever a client
+            // disconnects. Because things are relatively short-lived
+            // we trade the leakage for being able to debug
             return Promise.reject('runtime is paused');
         }
     } else {
