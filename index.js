@@ -63,11 +63,8 @@ async function startProfiling(options) {
     const client = await connectWithRetry(options.port, options.tries, options.retryWait, [], options.target);
     const { Runtime, Profiler } = client;
 
-    // resume form inspect-brk
-    await Runtime.runIfWaitingForDebugger();
-
-    // ensure the runtime isn't being debugged
     if (options.checkForPaused) {
+        // ensure the runtime isn't being debugged
         let { Debugger } = client;
         let isPaused = false;
         client.on('event', message => {
@@ -76,11 +73,13 @@ async function startProfiling(options) {
             }
         })
         await Debugger.enable();
-
         if (isPaused) {
             client.close();
             return Promise.reject('runtime is paused');
         }
+    } else {
+        // resume form inspect-brk
+        await Runtime.runIfWaitingForDebugger();
     }
 
     // now start profiling
