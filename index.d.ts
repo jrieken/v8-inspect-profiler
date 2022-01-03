@@ -50,6 +50,4 @@ declare module 'v8-inspect-profiler' {
     }
 
     export function startProfiling(options: StartOptions): PromiseLike<ProfilingSession>;
-    export function writeProfile(profile: ProfileResult, name?: string): PromiseLike<void>;
-    export function rewriteAbsolutePaths(profile: ProfileResult, replaceWith?: string): ProfileResult;
 }

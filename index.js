@@ -5,8 +5,6 @@
 
 //@ts-check
 
-const { join, isAbsolute, basename } = require('path');
-const { writeFile } = require('fs');
 const cdp = require('chrome-remote-interface');
 
 async function wait(n) {
@@ -103,32 +101,6 @@ async function startProfiling(options) {
     }
 }
 
-function rewriteAbsolutePaths(profile, replace = 'noAbsolutePaths') {
-    for (const node of profile.profile.nodes) {
-        if (node.callFrame && node.callFrame.url) {
-            if (isAbsolute(node.callFrame.url)) {
-                node.callFrame.url = join(replace, basename(node.callFrame.url));
-            }
-        }
-    }
-    return profile;
-}
-
-async function writeProfile(profile, filename = `profile-${Date.now()}.cpuprofile`) {
-    await new Promise((resolve, reject) => {
-        const data = JSON.stringify(profile.profile, null, 4);
-        writeFile(filename, data, err => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve();
-            }
-        })
-    });
-}
-
 module.exports = {
-    startProfiling,
-    writeProfile,
-    rewriteAbsolutePaths,
+    startProfiling
 }
