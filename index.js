@@ -11,7 +11,7 @@ async function wait(n) {
     return new Promise(resolve => setTimeout(resolve, n));
 }
 
-async function connectWithRetry(port, tries = 10, retryWait = 50, errors = [], target) {
+async function connectWithRetry(host, port, tries = 10, retryWait = 50, errors = [], target) {
     if (typeof target === 'undefined') {
         target = function (targets) {
             const target = targets.find(target => {
@@ -37,6 +37,7 @@ async function connectWithRetry(port, tries = 10, retryWait = 50, errors = [], t
 
     try {
         return await cdp({
+            host,
             port,
             target,
             local: true,
@@ -52,13 +53,13 @@ async function connectWithRetry(port, tries = 10, retryWait = 50, errors = [], t
             }
         }
         await wait(retryWait);
-        return connectWithRetry(port, tries - 1, retryWait, errors, target);
+        return connectWithRetry(host, port, tries - 1, retryWait, errors, target);
     }
 }
 
 async function startProfiling(options) {
 
-    const client = await connectWithRetry(options.port, options.tries, options.retryWait, [], options.target);
+    const client = await connectWithRetry(options.host, options.port, options.tries, options.retryWait, [], options.target);
     const { Runtime, Profiler } = client;
 
     if (options.checkForPaused) {
@@ -73,7 +74,7 @@ async function startProfiling(options) {
         await Debugger.enable();
         if (isPaused) {
             // client.close();
-            // ⬆︎ this leaks the connection but there is an issue in 
+            // ⬆︎ this leaks the connection but there is an issue in
             // chrome that it will resume the runtime whenever a client
             // disconnects. Because things are relatively short-lived
             // we trade the leakage for being able to debug

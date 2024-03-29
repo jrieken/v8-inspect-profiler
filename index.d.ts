@@ -42,6 +42,7 @@ declare module 'v8-inspect-profiler' {
     }
 
     export interface StartOptions {
+        host?: string;
         port: number;
         tries?: number;
         retyWait?: number;
